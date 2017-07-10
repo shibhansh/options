@@ -12,6 +12,13 @@ import mpl_toolkits.mplot3d.axes3d as axes3d
 
 from matplotlib import cm
 
+# TODO - add orientation in the state space representation
+# TODO - add colour infomation in walls
+
+# add orientation variable
+# add orientation info in state representation
+# add mehtod to return wall colour it's facing
+
 np.set_printoptions(threshold=np.inf)
 
 class GridWorld:
@@ -24,6 +31,8 @@ class GridWorld:
 	adjMatrix = None
 	rewardFunction = None
 	useNegativeRewards = False
+	wallColourInformation = None
+	strColour = ''
 
 	currX = 0
 	currY = 0
@@ -48,6 +57,7 @@ class GridWorld:
 			print 'You are supposed to provide an MDP specification as input!'
 			sys.exit()
 
+		self._readColour()
 		self._parseString()
 		self.currX = self.startX
 		self.currY = self.startY
@@ -60,17 +70,27 @@ class GridWorld:
 		for line in file:
 			self.strMDP += line
 
+	def _readColour(self, path):
+		''' We just read the file and put its contents in strMDP.'''
+		file = open(path, 'r')
+		for line in file:
+			self.strColour += line
+
 	def _parseString(self):
 		''' I now parse the received string. I'll store everything in a matrix
 		(matrixMDP) such that -1 means wall and 0 means available square. The
 		letter 'S' is converted to the initial (x,y) position. '''
 		data = self.strMDP.split('\n')
+		dataColourInfo = self.strColour.split('\n')
 		self.numRows = int(data[0].split(',')[0])
 		self.numCols = int(data[0].split(',')[1])
 		self.matrixMDP = np.zeros((self.numRows, self.numCols))
+		self.wallColourInformation = np.zeros((self.numRows, self.numCols))
 
 		for i in xrange(len(data) - 1):
 			for j in xrange(len(data[i+1])):
+				# add colour information in the colur matrix
+				self.wallColourInformation[i][j] = dataColourInfo[i+1][j]
 				if data[i+1][j] == 'X':
 					self.matrixMDP[i][j] = -1
 				elif data[i+1][j] == '.':
